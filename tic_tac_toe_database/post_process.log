@@ -91,3 +91,4 @@ PostgreSQL is starting on port 5000...
 2025-06-28 14:22:09.542 UTC [3128] FATAL:  role "kavia" does not exist
 2025-06-28 14:22:43.663 UTC [939] LOG:  checkpoint starting: time
 2025-06-28 14:24:18.707 UTC [939] LOG:  checkpoint complete: wrote 947 buffers (5.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=94.819 s, sync=0.215 s, total=95.045 s; sync files=315, longest=0.007 s, average=0.001 s; distance=4303 kB, estimate=4303 kB; lsn=0/19234A0, redo lsn=0/1923468
+2025-06-28 14:25:06.905 UTC [4412] FATAL:  role "kavia" does not exist
