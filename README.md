@@ -1,71 +1,63 @@
-# tictactoe-persistor-62001-62ff234f
+# Tic Tac Toe Database Container
 
-**Tic Tac Toe Database Container**
-
-This module defines the database schema and seed data for the Tic Tac Toe application. It supports both PostgreSQL and SQLite engines and stores user credentials and persistent game states.
+This container provides persistent data storage for the Tic Tac Toe app, hosting PostgreSQL (and optionally SQLite) databases containing users and games.
 
 ---
 
-## Schema Overview
+## Quick Start
 
+1. **Run/PostgreSQL Startup:**
+
+   - Use the script:
+     ```bash
+     bash tic_tac_toe_database/startup.sh
+     ```
+     This will initialize PostgreSQL, create needed users, and set up the database at port `5000`.
+
+2. **Database Connection Info:**
+
+   - **Connection String (default for dev):**
+     ```
+     psql postgresql://appuser:dbuser123@localhost:5000/myapp
+     ```
+   - These variables are set in `db_visualizer/postgres.env`:
+     ```
+     export POSTGRES_URL="postgresql://localhost:5000/myapp"
+     export POSTGRES_USER="appuser"
+     export POSTGRES_PASSWORD="dbuser123"
+     export POSTGRES_DB="myapp"
+     export POSTGRES_PORT="5000"
+     ```
+
+3. **Schema & Seed Data:**
+
+   - Schemas are in:
+     - `tic_tac_toe_database/schema_postgres.sql` (for PostgreSQL)
+     - `tic_tac_toe_database/schema_sqlite.sql` (for SQLite testing)
+   - Example commands:
+     ```bash
+     # For PostgreSQL:
+     psql -U appuser -d myapp -p 5000 -f tic_tac_toe_database/schema_postgres.sql
+     psql -U appuser -d myapp -p 5000 -f tic_tac_toe_database/seed_postgres.sql
+
+     # For SQLite:
+     sqlite3 myapp.db < tic_tac_toe_database/schema_sqlite.sql
+     sqlite3 myapp.db < tic_tac_toe_database/seed_sqlite.sql
+     ```
+
+---
+
+## Environment Variables
+
+**Sample (`.env` or shell export):**
 ```
-+---------------------+                +-----------------------------+
-|       users         |                |           games             |
-+---------------------+                +-----------------------------+
-| id (PK)            |<---+        +-->| id (PK)                    |
-| username (unique)  |    |        |   | player_x_id (FK->users.id) |
-| password_hash      |    |        |   | player_o_id (FK->users.id) |
-| created_at         |    |        |   | state (JSON/Text)          |
-+--------------------+     |        |   | status (ongoing/etc)       |
-                           |        |   | winner (x/o/null)          |
-                           +--------+   | created_at                 |
-                                        | updated_at                 |
-                                        +----------------------------+
+POSTGRES_URL=postgresql://appuser:dbuser123@localhost:5000/myapp
+POSTGRES_USER=appuser
+POSTGRES_PASSWORD=dbuser123
+POSTGRES_DB=myapp
+POSTGRES_PORT=5000
 ```
-
-## Table Definitions
-
-- **users**: Stores application users.
-    - `id`: integer, primary key
-    - `username`: unique, not null
-    - `password_hash`: hashed PW string, not null
-    - `created_at`: timestamp
-
-- **games**: Stores individual game state and participants.
-    - `id`: integer, primary key
-    - `player_x_id`: foreign key (users), nullable
-    - `player_o_id`: foreign key (users), nullable
-    - `state`: stringified board state (e.g. JSON)
-    - `status`: string (ongoing, finished, draw)
-    - `winner`: 'x', 'o', or null
-    - `created_at`, `updated_at`: timestamps
-
-## Usage
-
-- **Migrations:**
-    - For PostgreSQL:
-        - Schema: `tic_tac_toe_database/schema_postgres.sql`
-        - Seed:   `tic_tac_toe_database/seed_postgres.sql`
-    - For SQLite:
-        - Schema: `tic_tac_toe_database/schema_sqlite.sql`
-        - Seed:   `tic_tac_toe_database/seed_sqlite.sql`
-- Apply schema before running backend or any app logic.
-
-- **Sample PSQL Command**:
-    ```
-    psql -U <appuser> -d <myapp> -f tic_tac_toe_database/schema_postgres.sql
-    psql -U <appuser> -d <myapp> -f tic_tac_toe_database/seed_postgres.sql
-    ```
-
-- **Sample SQLite Command**:
-    ```
-    sqlite3 <myapp.db> < tic_tac_toe_database/schema_sqlite.sql
-    sqlite3 <myapp.db> < tic_tac_toe_database/seed_sqlite.sql
-    ```
-
-## Development & Test Data
-
-Minimal test users and games are created by the seeds for local development or testing.
+- These are required for the backend and any service connecting to the DB.
 
 ---
 
@@ -93,10 +85,33 @@ erDiagram
     users ||--o{ games : player_o_id
 ```
 
-## Notes
+---
 
-- For production, ensure strong password hashing (e.g., `bcrypt`).
-- Timestamp fields in SQLite use `DATETIME`; in PostgreSQL, use `TIMESTAMPTZ`.
-- Game `state` stores the full board as JSON or stringified array, e.g.: `["X", "O", "", ...]`
-- Usernames are unique.
-- Foreign keys allow graceful user deletion without orphan errors.
+## Port Usage
+
+- **Database (Postgres)**: `5000` (changeable via `POSTGRES_PORT`)
+- **DB Visualizer**: `3000` (Node.js viewer at `db_visualizer/server.js`)
+
+---
+
+## Advanced
+
+- The startup script sets up all permissions and saves connection info in `db_connection.txt`.
+- Direct environment settings for use with Node.js (if using the visualizer or migrations).
+- The DB allows connections from backend and any developer tools with correct credentials.
+
+---
+
+## Cross-Container Notes
+
+- This DB is designed for use with the Tic Tac Toe backend (`POSTGRES_*` vars).
+- Change/clone the sample `.env` values for secure production deployments.
+- The provided backend/service containers expect the schema to be present, so provision on first run.
+
+---
+
+## Troubleshooting
+
+- If connection fails, make sure container/network port `5000` is accessible and user credentials from `.env` are correct.
+
+---
